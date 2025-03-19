@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pausa Ligera</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #fff3e0;
+            color: #4a2c1b;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            transition: background-color 0.3s ease;
+        }
+        #container {
+            background: #ffe8cc;
+            padding: 12px;
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 850px;
+            width: 90%;
+            transition: background-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 10px 0;
+            height: auto;
+            overflow-y: auto;
+        }
+        #prompt {
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            color: #d97706;
+            transition: color 0.3s ease;
+        }
+        canvas {
+            border: 2px solid #f59e0b;
+            background: #fffaf0;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: crosshair;
+            touch-action: none;
+            width: 100%;
+            max-width: 650px; /* Reducido aún más */
+            height: 350px; /* Reducido aún más */
+            transition: border-color 0.3s ease;
+        }
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        button {
+            padding: 6px 12px;
+            border: none;
+            background-color: #f59e0b;
+            color: #fff;
+            font-size: 0.9em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #d97706;
+        }
+        #diary {
+            max-height: 140px; /* Reducido para caber */
+            overflow-y: auto;
+            background: #fef3e6;
+            padding: 8px;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            max-width: 650px;
+        }
+        .diary-entry {
+            padding: 6px;
+            border-bottom: 1px solid #fed7aa;
+            text-align: left;
+            transition: border-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .diary-entry img {
+            border-radius: 5px;
+            width: 70px; /* Reducido para caber */
+            height: auto;
+        }
+        .diary-entry button {
+            padding: 5px 10px;
+            font-size: 0.8em;
+            background-color: #25D366;
+        }
+        .diary-entry button:hover {
+            background-color: #1EBE54;
+        }
+        h1 {
+            color: #c05621;
+            font-size: 1.5em;
+            margin-bottom: 8px;
+            margin-top: 8px;
+            transition: color 0.3s ease;
+        }
+        h3 {
+            color: #e07b39;
+            margin-bottom: 6px;
+            font-size: 1em;
+            transition: color 0.3s ease;
+        }
+        #color-picker, #drawing-tools {
+            margin: 6px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .tool-label {
+            font-size: 0.9em;
+            color: #e07b39;
+        }
+        .tool-options, .color-options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        .tool-option, .color-option {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #fff;
+            transition: transform 0.2s ease;
+        }
+        .tool-option:hover, .color-option:hover {
+            transform: scale(1.2);
+        }
+        #eraser {
+            background-color: #fff;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M14.59 2.59a2 2 0 0 1 2.83 0l4.58 4.58a2 2 0 0 1 0 2.83L12.41 19.41a2 2 0 0 1-1.42.59H3a1 1 0 0 1-1-1v-6a2 2 0 0 1 .59-1.42L14.59 2.59z" fill="gray"/><path d="M15 5l-9 9v5h5l9-9-5-5z" fill="pink"/></svg>');
+            background-size: 20px;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        #thickness-slider {
+            width: 120px;
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 5px;
+            background: #f59e0b;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        #thickness-slider:hover {
+            opacity: 1;
+        }
+        #thickness-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #d97706;
+            cursor: pointer;
+        }
+        /* Estilos compactos para móviles */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.3em;
+                margin-bottom: 5px;
+                margin-top: 5px;
+            }
+            #prompt {
+                font-size: 0.9em;
+                margin-bottom: 5px;
+            }
+            canvas {
+                height: 280px;
+            }
+            button {
+                padding: 5px 10px;
+                font-size: 0.8em;
+            }
+            #diary {
+                max-height: 120px;
+            }
+            .diary-entry img {
+                width: 60px;
+            }
+            .tool-option, .color-option {
+                width: 18px;
+                height: 18px;
+            }
+            #container {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Pausa Ligera</h1>
+        <p id="prompt">Dibuja algo que te haga feliz.</p>
+        <canvas id="canvas"></canvas>
+        <div id="drawing-tools">
+            <span class="tool-label">Colores para dibujar</span>
+            <div class="tool-options">
+                <div class="tool-option" style="background-color: #000000" onclick="changeDrawingColor('#000000')"></div>
+                <div class="tool-option" style="background-color: #ff0000" onclick="changeDrawingColor('#ff0000')"></div>
+                <div class="tool-option" style="background-color: #00ff00" onclick="changeDrawingColor('#00ff00')"></div>
+                <div class="tool-option" style="background-color: #0000ff" onclick="changeDrawingColor('#0000ff')"></div>
+                <div class="tool-option" style="background-color: #ffff00" onclick="changeDrawingColor('#ffff00')"></div>
+                <div class="tool-option" style="background-color: #ff00ff" onclick="changeDrawingColor('#ff00ff')"></div>
+                <div class="tool-option" style="background-color: #00ffff" onclick="changeDrawingColor('#00ffff')"></div>
+                <div class="tool-option" style="background-color: #ff5722" onclick="changeDrawingColor('#ff5722')"></div>
+                <div class="tool-option" style="background-color: #4caf50" onclick="changeDrawingColor('#4caf50')"></div>
+                <div class="tool-option" style="background-color: #9c27b0" onclick="changeDrawingColor('#9c27b0')"></div>
+                <div class="tool-option" id="eraser" onclick="startErasing()"></div>
+            </div>
+            <input type="range" id="thickness-slider" min="1" max="50" value="2" onchange="changeThickness(this.value)">
+        </div>
+        <div class="button-container">
+            <button id="saveBtn">Guardar</button>
+            <button id="nextBtn">Siguiente Desafío</button>
+            <button id="resetBtn">Reiniciar Dibujo</button>
+        </div>
+        <div id="color-picker">
+            <span class="tool-label">Colores para el diseño</span>
+            <div class="color-options">
+                <div class="color-option" style="background-color: #ffb74d" onclick="changeTheme('naranja')"></div>
+                <div class="color-option" style="background-color: #ff8a65" onclick="changeTheme('coral')"></div>
+                <div class="color-option" style="background-color: #d81b60" onclick="changeTheme('rosa')"></div>
+                <div class="color-option" style="background-color: #f06292" onclick="changeTheme('rosaClaro')"></div>
+                <div class="color-option" style="background-color: #26a69a" onclick="changeTheme('turquesa')"></div>
+                <div class="color-option" style="background-color: #4dd0e1" onclick="changeTheme('turquesaClaro')"></div>
+            </div>
+        </div>
+        <div id="diary">
+            <h3>Tu Diario</h3>
+            <!-- Entradas del diario se añadirán aquí -->
+        </div>
+    </div>
+
+    <script>
+        // Variables del lienzo
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+        let isErasing = false;
+
+        // Ajustar tamaño del lienzo al cargar
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            // Restaurar configuraciones después de redimensionar
+            ctx.lineWidth = document.getElementById('thickness-slider').value || 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#000000';
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('load', resizeCanvas);
+
+        // Configuración inicial del lienzo
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#000000';
+
+        // Vincular botones
+        const saveBtn = document.getElementById('saveBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // Lista de desafíos
+        const challenges = [
+            "Dibuja algo que te haga feliz.",
+            "Dibuja un lugar donde te sientas en paz.",
+            "Dibuja un animal que te gustaría ser.",
+            "Dibuja algo que te motive hoy.",
+            "Dibuja un recuerdo bonito.",
+            "Dibuja tu comida favorita.",
+            "Dibuja un paisaje que te encante.",
+            "Dibuja algo que te haga reír.",
+            "Dibuja un objeto que te traiga calma.",
+            "Dibuja cómo te sientes ahora mismo.",
+            "Dibuja un sueño que tengas.",
+            "Dibuja algo que hayas visto hoy.",
+            "Dibuja una flor o planta que te guste.",
+            "Dibuja un personaje imaginario.",
+            "Dibuja algo que quieras lograr.",
+            "Dibuja tu estación del año favorita.",
+            "Dibuja un regalo que te gustaría recibir.",
+            "Dibuja un momento de tu infancia.",
+            "Dibuja algo que te inspire.",
+            "Dibuja un diseño para una camiseta.",
+            "Dibuja tu bebida preferida.",
+            "Dibuja un superpoder que te gustaría tener.",
+            "Dibuja un lugar al que quieras viajar.",
+            "Dibuja algo que te relaje."
+        ];
+        let currentChallengeIndex = 0;
+
+        // Eventos para ratón
+        canvas.addEventListener('mousedown', startDrawingPosition);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        // Eventos para pantalla táctil
+        canvas.addEventListener('touchstart', startDrawingPositionTouch, { passive: false });
+        canvas.addEventListener('touchmove', drawTouch, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        // Funciones de dibujo (ratón)
+        function startDrawingPosition(e) {
+            drawing = true;
+            const pos = getMousePosition(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+            const pos = getMousePosition(e);
+            if (isErasing) {
+                ctx.globalCompositeOperation = 'destination-out';
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+            }
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            drawing = false;
+            ctx.closePath();
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        // Funciones de dibujo (táctil)
+        function startDrawingPositionTouch(e) {
+            e.preventDefault();
+            drawing = true;
+            const pos = getTouchPosition(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        }
+
+        function drawTouch(e) {
+            e.preventDefault();
+            if (!drawing) return;
+            const pos = getTouchPosition(e);
+            if (isErasing) {
+                ctx.globalCompositeOperation = 'destination-out';
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+            }
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        }
+
+        // Obtener posición precisa
+        function getMousePosition(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
+        function getTouchPosition(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const touch = e.touches[0];
+            return {
+                x: (touch.clientX - rect.left) * scaleX,
+                y: (touch.clientY - rect.top) * scaleY
+            };
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Guardar en el diario - Modificado para corregir el problema de imagen en negro
+        function saveToDiary() {
+            try {
+                // Aseguramos que el fondo del canvas no sea transparente
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Primero dibujar un fondo blanco sólido
+                tempCtx.fillStyle = '#fffaf0'; // Mismo color de fondo del canvas
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                
+                // Luego copiar el contenido del canvas original
+                tempCtx.drawImage(canvas, 0, 0);
+                
+                // Obtener la imagen con fondo blanco
+                const dataURL = tempCanvas.toDataURL('image/png');
+                const timestamp = new Date().toLocaleString();
+                const diaryEntry = { image: dataURL, time: timestamp, challenge: challenges[currentChallengeIndex] };
+
+                addToDiaryUI(diaryEntry);
+                clearCanvas();
+            } catch (err) {
+                console.error('Error al guardar:', err);
+                alert('Hubo un problema al guardar. Intenta de nuevo.');
+            }
+        }
+
+        function addToDiaryUI(entry) {
+            const diaryDiv = document.getElementById('diary');
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'diary-entry';
+            entryDiv.innerHTML = `
+                <div>
+                    <p>${entry.challenge}</p>
+                    <img src="${entry.image}" alt="Dibujo guardado">
+                </div>
+                <button onclick="shareToWhatsApp('${entry.image}', '${entry.challenge}')">Compartir</button>
+            `;
+            diaryDiv.appendChild(entryDiv);
+            diaryDiv.scrollTop = diaryDiv.scrollHeight;
+        }
+
+        // Compartir en WhatsApp con imagen
+        function shareToWhatsApp(imageData, challenge) {
+            try {
+                // Usar el método de Web Share API si está disponible
+                if (navigator.share) {
+                    fetch(imageData)
+                        .then(res => res.blob())
+                        .then(blob => {
+                            const file = new File([blob], `${challenge.replace(/\s+/g, '_')}.png`, { type: 'image/png' });
+                            const message = `¡Mira mi dibujo! Desafío: "${challenge}"`;
+                            
+                            navigator.share({
+                                files: [file],
+                                text: message
+                            }).catch(err => {
+                                console.error('Error al compartir:', err);
+                                fallbackShare(imageData, challenge);
+                            });
+                        });
+                } else {
+                    fallbackShare(imageData, challenge);
+                }
+            } catch (err) {
+                console.error('Error al compartir:', err);
+                fallbackShare(imageData, challenge);
+            }
+        }
+
+        function fallbackShare(imageData, challenge) {
+            // Descargar la imagen primero
+            const link = document.createElement('a');
+            link.href = imageData;
+            link.download = `${challenge.replace(/\s+/g, '_')}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Abrir WhatsApp después
+            setTimeout(() => {
+                const whatsappURL = `https://api.whatsapp.com/send?text=${encodeURIComponent(`¡Mira mi dibujo! Desafío: "${challenge}"`)}`;
+                window.open(whatsappURL, '_blank');
+                alert('Descarga el dibujo y adjúntalo en WhatsApp.');
+            }, 500);
+        }
+
+        // Siguiente desafío
+        function nextChallenge() {
+            currentChallengeIndex = (currentChallengeIndex + 1) % challenges.length;
+            document.getElementById('prompt').textContent = challenges[currentChallengeIndex];
+            clearCanvas();
+        }
+
+        // Cambiar color de dibujo
+        function changeDrawingColor(color) {
+            isErasing = false;
+            ctx.strokeStyle = color;
+        }
+
+        // Activar goma
+        function startErasing() {
+            isErasing = true;
+            ctx.strokeStyle = '#fffaf0';
+            ctx.lineWidth = document.getElementById('thickness-slider').value;
+        }
+
+        // Cambiar grosor del pincel
+        function changeThickness(value) {
+            ctx.lineWidth = value;
+            if (!isErasing) {
+                ctx.strokeStyle = ctx.strokeStyle;
+            } else {
+                ctx.strokeStyle = '#fffaf0';
+            }
+        }
+
+        // Reiniciar dibujo
+        function resetDrawing() {
+            clearCanvas();
+        }
+
+        // Cambiar tema de color
+        function changeTheme(theme) {
+            let bodyBg, containerBg, promptColor, buttonBg, buttonHover, borderColor, diaryBg, h1Color, h3Color, diaryBorder;
+            switch (theme) {
+                case 'naranja':
+                    bodyBg = '#fff3e0';
+                    containerBg = '#ffe8cc';
+                    promptColor = '#d97706';
+                    buttonBg = '#f59e0b';
+                    buttonHover = '#d97706';
+                    borderColor = '#f59e0b';
+                    diaryBg = '#fef3e6';
+                    h1Color = '#c05621';
+                    h3Color = '#e07b39';
+                    diaryBorder = '#fed7aa';
+                    break;
+                case 'coral':
+                    bodyBg = '#ffede7';
+                    containerBg = '#ffccb3';
+                    promptColor = '#e65100';
+                    buttonBg = '#ff8a65';
+                    buttonHover = '#e65100';
+                    borderColor = '#ff8a65';
+                    diaryBg = '#ffe6d9';
+                    h1Color = '#bf360c';
+                    h3Color = '#f4511e';
+                    diaryBorder = '#ffab91';
+                    break;
+                case 'rosa':
+                    bodyBg = '#fce4ec';
+                    containerBg = '#f8bbd0';
+                    promptColor = '#c2185b';
+                    buttonBg = '#d81b60';
+                    buttonHover = '#ad1457';
+                    borderColor = '#d81b60';
+                    diaryBg = '#fee6ec';
+                    h1Color = '#880e4f';
+                    h3Color = '#c2185b';
+                    diaryBorder = '#f48fb1';
+                    break;
+                case 'rosaClaro':
+                    bodyBg = '#fff1f6';
+                    containerBg = '#ffd1dc';
+                    promptColor = '#d81b60';
+                    buttonBg = '#f06292';
+                    buttonHover = '#d81b60';
+                    borderColor = '#f06292';
+                    diaryBg = '#ffebf0';
+                    h1Color = '#ad1457';
+                    h3Color = '#ec407a';
+                    diaryBorder = '#ffbdd2';
+                    break;
+                case 'turquesa':
+                    bodyBg = '#e0f7fa';
+                    containerBg = '#b2ebf2';
+                    promptColor = '#00695c';
+                    buttonBg = '#26a69a';
+                    buttonHover = '#00695c';
+                    borderColor = '#26a69a';
+                    diaryBg = '#e0f7fa';
+                    h1Color = '#004d40';
+                    h3Color = '#00897b';
+                    diaryBorder = '#80deea';
+                    break;
+                case 'turquesaClaro':
+                    bodyBg = '#e5f9fb';
+                    containerBg = '#c6f0f6';
+                    promptColor = '#0277bd';
+                    buttonBg = '#4dd0e1';
+                    buttonHover = '#0277bd';
+                    borderColor = '#4dd0e1';
+                    diaryBg = '#e5f9fb';
+                    h1Color = '#01579b';
+                    h3Color = '#039be5';
+                    diaryBorder = '#81d4fa';
+                    break;
+            }
+            document.body.style.backgroundColor = bodyBg;
+            document.getElementById('container').style.backgroundColor = containerBg;
+            document.getElementById('prompt').style.color = promptColor;
+            document.querySelectorAll('button').forEach(btn => {
+                if (!btn.closest('.diary-entry')) {
+                    btn.style.backgroundColor = buttonBg;
+                    btn.onmouseover = () => btn.style.backgroundColor = buttonHover;
+                    btn.onmouseout = () => btn.style.backgroundColor = buttonBg;
+                }
+            });
+            canvas.style.borderColor = borderColor;
+            document.getElementById('diary').style.backgroundColor = diaryBg;
+            document.querySelector('h1').style.color = h1Color;
+            document.querySelector('h3').style.color = h3Color;
+            document.querySelectorAll('.diary-entry').forEach(entry => {
+                entry.style.borderBottomColor = diaryBorder;
+            });
+        }
+
+        // Asignar eventos a botones
+        saveBtn.addEventListener('click', () => {
+            saveToDiary();
+            console.log('Guardar: Entrada añadida al diario');
+        });
+
+        nextBtn.addEventListener('click', () => {
+            nextChallenge();
+            console.log('Siguiente Desafío:', challenges[currentChallengeIndex]);
+        });
+
+        resetBtn.addEventListener('click', () => {
+            resetDrawing();
+            console.log('Reiniciar: Lienzo limpio');
+        });
+
+        // Verificación inicial
+        console.log('Página cargada. Botones y lienzo listos.');
+    </script>
+</body>
+</html>
